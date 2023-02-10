@@ -1,6 +1,8 @@
 /// <reference types="Cypress" />
 
+
 describe('Central de Atendimento ao Cliente TAT', function() {
+    const threeSecondsInMs = 3000
     const dados = {}
 
     beforeEach(() => {
@@ -13,35 +15,59 @@ describe('Central de Atendimento ao Cliente TAT', function() {
     })
 
     //Aula 2 - Exercício - Exercício extra 1
-    it('preenche os campos obrigatórios e envia o formulário', function() {
-        cy.get('#firstName').type('Nome').click()
-        cy.get('#lastName').type('Sobrenome').click()
-        cy.get('#email').type('email@teste.com.br').click()
-        cy.get('#open-text-area').type('texto da ajuda bem grande',{delay: 100}).click()
-        cy.contains('button','Enviar').click()
-        cy.get('.success').should('be.visible')
-        
+
+    Cypress._.times(5,() =>{
+        it('preenche os campos obrigatórios e envia o formulário', function() {
+
+            cy.clock()
+            
+            cy.get('#firstName').type('Nome').click()
+            cy.get('#lastName').type('Sobrenome').click()
+            cy.get('#email').type('email@teste.com.br').click()
+            cy.get('#open-text-area').type('texto da ajuda bem grande',{delay: 100}).click()
+            cy.contains('button','Enviar').click()
+
+            cy.get('.success').should('be.visible')
+
+            cy.tick(threeSecondsInMs)
+            cy.get('.success').should('not.be.visible')
+            
+        })
     })
 
     //Aula 2 - Exercício extra 2
     it('exibe mensagem de erro ao submeter o formulário com um email com formatação inválida', function() {
+
+        cy.clock()
+        
         cy.get('#firstName').type('Nome').click()
         cy.get('#lastName').type('Sobrenome').click()
         cy.get('#email').type('email-e').click()
         cy.get('#open-text-area').type('texto da ajuda bem grande, com muitas informações mesmo',{delay: 0}).click()
         cy.contains('button','Enviar').click()
+
         cy.get('.error').should('be.visible')
+        cy.tick(threeSecondsInMs)
+        cy.get('.error').should('not.be.visible')
+
     })
 
     //Aula 2 - Exercício extra 3
     it('telefone vazio', function () {
+        cy.clock()
+
         cy.get('#firstName').type('Nome').click()
         cy.get('#lastName').type('Sobrenome').click()
         cy.get('#email').type('wesley92silva@gmail.com').click()
         cy.get('#phone').type('aba').click().should('have.text','')
         cy.get('#open-text-area').type('texto da ajuda bem grande').click()
         cy.contains('button','Enviar').click()
+
+
         cy.get('.success').should('be.visible')
+
+        cy.tick(threeSecondsInMs)
+        cy.get('.success').should('not.be.visible')
     })
 
     //Aula 2 - Exercício extra 4 - Aula 5 Exercício extra
@@ -65,8 +91,14 @@ describe('Central de Atendimento ao Cliente TAT', function() {
 
     //Aula 2 - Exercício extra 6 - Exercício extra 8
     it('exibe mensagem de erro ao submeter o formulário sem preencher os campos obrigatórios', function() {
+
+        cy.clock()
+
         cy.contains('button','Enviar').click()
         cy.get('.error').should('be.visible')
+
+        cy.tick(threeSecondsInMs)
+        cy.get('.error').should('not.be.visible')
     })
 
     //Aula 2 - Exercício extra 7 - Comandos customizados
@@ -137,6 +169,31 @@ describe('Central de Atendimento ao Cliente TAT', function() {
     //Aula 8 - package.json
     //Aula 9
 
+    it('exibe e esconde as mensagens de sucesso e erro usando o .invoke', () => {
+        cy.get('.success').should('not.be.visible').invoke('show').should('be.visible').and('contain', 'Mensagem enviada com sucesso.').invoke('hide').should('not.be.visible')
+        cy.get('.error').should('not.be.visible').invoke('show').should('be.visible').and('contain', 'Valide os campos obrigatórios!').invoke('hide').should('not.be.visible')
+      })
+
+    it('preenche a area de texto usando o comando invoke', function() {
+        const longText = Cypress._.repeat('0123456789', 20)
+
+        cy.get('textarea').invoke('val', longText).should('have.value', longText)
+    })
     
+    it('faz uma requisição HTTP', function() {
+        cy.request({
+            method: 'GET',
+            url: 'https://cac-tat.s3.eu-central-1.amazonaws.com/index.html'
+          }).then((response) => {
+            expect(response.status).to.equal(200);
+            expect(response.statusText).to.equal('OK')
+            expect(response.body).to.include('CAC TAT')
+          })
+
+    })
+    
+    it.only('exibe o gato', function(){
+        cy.get('#cat').invoke('show').should('be.visible')
+    })
     
   })
